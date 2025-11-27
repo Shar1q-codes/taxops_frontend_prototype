@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithP
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Loader2, UploadCloud, ShieldCheck, FileText, CheckCircle2, AlertCircle, LogOut } from "lucide-react";
 
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, googleProvider, firebaseReady } from "@/lib/firebase";
 import { AuditFinding, AuditResponse, uploadDocument } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +18,8 @@ import { cn } from "@/lib/utils";
 
 type Status = "idle" | "uploading" | "processing" | "complete" | "error";
 
-export function AuditWorkspace() {
-  const [user, loadingAuth, authError] = useAuthState(auth);
+function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth").Auth }) {
+  const [user, loadingAuth, authError] = useAuthState(activeAuth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [docType, setDocType] = useState<string>("");
@@ -76,9 +76,10 @@ export function AuditWorkspace() {
       setStatus("complete");
       setResult(response);
       setMessage("Audit complete.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err.message || "Upload failed.");
+      const message = err instanceof Error ? err.message : "Upload failed.";
+      setMessage(message);
     }
   }, [docType, file, user]);
 
@@ -90,16 +91,17 @@ export function AuditWorkspace() {
     }
     try {
       if (mode === "signin") {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(activeAuth, email, password);
         setMessage("Signed in.");
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(activeAuth, email, password);
         setMessage("Account created and signed in.");
       }
       setStatus("idle");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err?.message ?? "Auth error");
+      const message = err instanceof Error ? err.message : "Auth error";
+      setMessage(message);
     }
   };
 
@@ -214,7 +216,7 @@ export function AuditWorkspace() {
                 type="button"
                 className="w-full justify-center gap-2"
                 variant="outline"
-                onClick={() => signInWithPopup(auth, googleProvider)}
+                onClick={() => signInWithPopup(activeAuth, googleProvider)}
               >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5" />
                 Sign in with Google
@@ -235,7 +237,7 @@ export function AuditWorkspace() {
                 <Button variant="outline" onClick={() => setMessage("")} className="hidden md:inline-flex">
                   Reset
                 </Button>
-                <Button variant="ghost" onClick={() => signOut(auth)} className="gap-2 text-slate-600">
+                <Button variant="ghost" onClick={() => signOut(activeAuth)} className="gap-2 text-slate-600">
                   <LogOut className="h-4 w-4" /> Sign out
                 </Button>
               </div>
@@ -349,7 +351,13 @@ export function AuditWorkspace() {
                   </div>
                   {result.audit_trail?.retrieval_sources?.length ? (
                     <div className="text-xs text-slate-500">
-                      Retrieval sources: {result.audit_trail.retrieval_sources.map((s: any) => s.title || s.id || "source").join(", ")}
+                      Retrieval sources:{" "}
+                      {result.audit_trail.retrieval_sources
+                        .map((s) => {
+                          const source = s as { title?: string; id?: string };
+                          return source.title || source.id || "source";
+                        })
+                        .join(", ")}
                     </div>
                   ) : null}
                 </CardContent>
@@ -377,4 +385,17 @@ export function AuditWorkspace() {
       )}
     </div>
   );
+}
+
+export function AuditWorkspace() {
+  const activeAuth = auth;
+  if (!firebaseReady || !activeAuth) {
+    return (
+      <div className="mx-auto max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800 shadow-sm">
+        <p className="text-sm font-semibold">Firebase configuration missing.</p>
+        <p className="text-sm">Set NEXT_PUBLIC_FIREBASE_* keys in your environment and redeploy.</p>
+      </div>
+    );
+  }
+  return <AuditWorkspaceInner activeAuth={activeAuth} />;
 }

@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -8,11 +8,18 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-  console.warn("Firebase environment variables are missing. Auth will not work until provided.");
+const configReady = Boolean(firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId && firebaseConfig.appId);
+
+let app: FirebaseApp | null = null;
+let authInstance: Auth | null = null;
+
+if (!configReady) {
+  console.warn("Firebase environment variables are missing. Auth is disabled until provided.");
+} else {
+  app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  authInstance = getAuth(app);
 }
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-
-export const auth = getAuth(app);
+export const firebaseReady = configReady;
+export const auth = authInstance;
 export const googleProvider = new GoogleAuthProvider();
