@@ -23,6 +23,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [docType, setDocType] = useState<string>("");
+  const [taxYear, setTaxYear] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string>("");
@@ -72,7 +73,8 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
     try {
       setStatus("uploading");
       setMessage("Uploading file securely...");
-      const response = await uploadDocument(file, user, docType || undefined);
+      const parsedYear = taxYear ? Number(taxYear) : undefined;
+      const response = await uploadDocument(file, user, docType || undefined, parsedYear);
       setStatus("complete");
       setResult(response);
       setMessage("Audit complete.");
@@ -81,7 +83,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
       const message = err instanceof Error ? err.message : "Upload failed.";
       setMessage(message);
     }
-  }, [docType, file, user]);
+  }, [docType, file, user, taxYear]);
 
   const handleEmailLogin = async (mode: "signin" | "signup") => {
     if (!email || !password) {
@@ -246,6 +248,15 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
               <div>
                 <Label className="mb-2 block">Document type (optional)</Label>
                 <Input value={docType} onChange={(e) => setDocType(e.target.value)} placeholder="e.g., W2, 1099-INT" className="mb-4" />
+                <Label className="mb-2 block">Tax year (optional)</Label>
+                <Input
+                  value={taxYear}
+                  onChange={(e) => setTaxYear(e.target.value)}
+                  placeholder="e.g., 2024"
+                  className="mb-4"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
                 <label
                   onDragOver={(e) => {
                     e.preventDefault();

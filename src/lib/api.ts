@@ -24,12 +24,15 @@ export type AuditResponse = {
   };
 };
 
-export async function uploadDocument(file: File, user: User, docType?: string): Promise<AuditResponse> {
+export async function uploadDocument(file: File, user: User, docType?: string, taxYear?: number): Promise<AuditResponse> {
   const token = await user.getIdToken();
   const formData = new FormData();
   formData.append("file", file);
   if (docType) {
     formData.append("doc_type", docType);
+  }
+  if (typeof taxYear === "number" && !Number.isNaN(taxYear)) {
+    formData.append("tax_year", String(taxYear));
   }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
