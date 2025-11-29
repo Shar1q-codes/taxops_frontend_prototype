@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useCallback, useMemo, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Loader2, UploadCloud, ShieldCheck, FileText, CheckCircle2, AlertCircle, LogOut } from "lucide-react";
@@ -30,6 +30,10 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
   const [result, setResult] = useState<AuditResponse | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    console.log("[AuditUI] Backend base URL", process.env.NEXT_PUBLIC_API_URL);
+  }, []);
 
   const progressValue = useMemo(() => {
     switch (status) {
@@ -70,6 +74,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
       setStatus("error");
       return;
     }
+    console.log("[AuditUI] Run audit clicked", { file, year: taxYear, docType });
     try {
       setStatus("uploading");
       setMessage("Uploading file securely...");
@@ -82,6 +87,10 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
       setStatus("error");
       const message = err instanceof Error ? err.message : "Upload failed.";
       setMessage(message);
+      console.error("[AuditUI] Audit failed", err);
+      if (typeof window !== "undefined") {
+        window.alert(message || "Audit failed – see console for details");
+      }
     }
   }, [docType, file, user, taxYear]);
 

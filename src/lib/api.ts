@@ -40,17 +40,25 @@ export async function uploadDocument(file: File, user: User, docType?: string, t
     throw new Error("Missing NEXT_PUBLIC_API_URL for backend target.");
   }
 
-  const response = await fetch(`${apiUrl.replace(/\/$/, "")}/audit-document`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: formData,
-  });
+  try {
+    const url = `${apiUrl.replace(/\/$/, "")}/audit-document`;
+    console.log("[AuditAPI] POST", url, { fileName: file.name, size: file.size });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error?.detail || "Failed to process document.");
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      console.error("[AuditAPI] HTTP error", response.status, await response.text());
+      throw new Error(`Audit API HTTP ${response.status}`);
+    }
+    return (await response.json()) as AuditResponse;
+  } catch (err) {
+    console.error("[AuditAPI] Network error", err);
+    throw err;
   }
-  return (await response.json()) as AuditResponse;
 }
