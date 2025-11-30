@@ -91,7 +91,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
       setMessage(message);
       console.error("[AuditUI] Audit failed", err);
       if (typeof window !== "undefined") {
-        window.alert(message || "Audit failed – see console for details");
+        window.alert(message || "Audit failed; see console for details");
       }
     }
   }, [docType, file, user, taxYear]);
@@ -339,7 +339,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
                 <CardHeader>
                   <CardTitle>Document summary</CardTitle>
                   <CardDescription>
-                    Doc ID: {result.doc_id} ? Doc type: {result.doc_type} ? Tax year: {result.tax_year}
+                    Doc ID: {result.doc_id} • Doc type: {result.doc_type} • Tax year: {result.tax_year}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 text-sm text-slate-700 md:grid-cols-2">
@@ -347,7 +347,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
                     <p>Filename: {result.document_metadata.filename || "N/A"}</p>
                     <p>Request ID: {result.request_id}</p>
                     <p>
-                      Received: {new Date(result.received_at).toLocaleString()} ? Processed: {new Date(result.processed_at).toLocaleString()}
+                      Received: {new Date(result.received_at).toLocaleString()} • Processed: {new Date(result.processed_at).toLocaleString()}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -408,7 +408,7 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-slate-900">{f.summary || f.message || f.code}</span>
                               <Badge variant={severityTone(f)}>{(f.severity || "info").toUpperCase()}</Badge>
-                              {f.rule_type && <Badge variant="outline">{f.rule_type}</Badge>}
+                              {f.rule_type && <Badge variant="default">{f.rule_type}</Badge>}
                             </div>
                             <p className="text-sm text-slate-700">{f.message}</p>
                             <div className="flex flex-wrap gap-2 text-xs text-slate-600">
@@ -423,10 +423,10 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
                   ) : (
                     <p className="text-sm text-slate-600">No findings match the selected filters.</p>
                   )}
-                </CardContent>
-              </Card>
-            </div>
-          )
+              </CardContent>
+            </Card>
+          </div>
+          )}
           {status === "error" && (
             <Card className="border-rose-100 bg-rose-50">
               <CardHeader>
