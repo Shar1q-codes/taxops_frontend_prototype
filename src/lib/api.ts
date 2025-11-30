@@ -1,27 +1,58 @@
 import { User } from "firebase/auth";
 
+export type Citation = { label: string; url: string };
+
 export type AuditFinding = {
-  code?: string;
-  title?: string;
-  severity?: string;
-  description?: string;
-  confidence?: number;
+  id: string;
+  code: string;
+  severity: string;
+  rule_type?: string;
   category?: string;
-  source?: string;
+  summary?: string;
+  message: string;
+  doc_type: string;
+  tax_year: number;
+  fields: string[];
+  field_paths: string[];
+  citations: Citation[];
+  rule_source?: string;
+  condition?: string;
+  tags: string[];
+  extras: Record<string, unknown>;
+};
+
+export type AuditSummary = {
+  total_rules_evaluated: number;
+  total_findings: number;
+  by_severity: Record<string, number>;
+  by_rule_type: Record<string, number>;
+};
+
+export type DocumentMetadata = {
+  filename?: string | null;
+  content_type?: string | null;
+  pages?: number | null;
+  source?: string | null;
+};
+
+export type EngineInfo = {
+  ruleset?: string | null;
+  version?: string | null;
+  evaluation_time_ms?: number | null;
 };
 
 export type AuditResponse = {
-  processing_time_ms: number;
-  doc_id?: string;
-  rule_findings: AuditFinding[];
-  llm_findings: AuditFinding[];
-  merged_findings: AuditFinding[];
-  audit_trail?: {
-    retrieval_sources?: Array<Record<string, unknown>>;
-    timestamp?: string;
-    llm_mode?: string;
-    llm_skipped?: boolean;
-  };
+  request_id: string;
+  doc_id: string;
+  doc_type: string;
+  tax_year: number;
+  received_at: string;
+  processed_at: string;
+  status: string;
+  summary: AuditSummary;
+  document_metadata: DocumentMetadata;
+  findings: AuditFinding[];
+  engine: EngineInfo;
 };
 
 export async function uploadDocument(file: File, user: User, docType?: string, taxYear?: number): Promise<AuditResponse> {
@@ -52,11 +83,15 @@ export async function uploadDocument(file: File, user: User, docType?: string, t
       body: formData,
     });
 
+    const payload = (await response.json()) as AuditResponse;
     if (!response.ok) {
-      console.error("[AuditAPI] HTTP error", response.status, await response.text());
+      console.error("[AuditAPI] HTTP error", response.status, payload);
       throw new Error(`Audit API HTTP ${response.status}`);
     }
-    return (await response.json()) as AuditResponse;
+    if (!payload || payload.status !== "ok") {
+      throw new Error(payload ? payload.status : "Unknown audit failure");
+    }
+    return payload;
   } catch (err) {
     console.error("[AuditAPI] Network error", err);
     throw err;

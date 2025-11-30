@@ -29,6 +29,8 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
   const [message, setMessage] = useState<string>("");
   const [result, setResult] = useState<AuditResponse | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [severityFilter, setSeverityFilter] = useState<"all" | "error" | "warning" | "info">("all");
+  const [ruleTypeFilter, setRuleTypeFilter] = useState<"all" | "structural" | "math_sanity" | "heuristic">("all");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -117,43 +119,21 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
   };
 
   const severityTone = (finding: AuditFinding) => {
-    const level = (finding.severity || finding.category || "").toLowerCase();
-    if (level.includes("high") || level.includes("critical")) return "danger";
-    if (level.includes("med") || level.includes("risk")) return "warning";
-    if (level.includes("low") || level.includes("info")) return "default";
+    const level = (finding.severity || "").toLowerCase();
+    if (level === "error" || level.includes("high") || level.includes("critical")) return "danger";
+    if (level === "warning" || level.includes("warn")) return "warning";
+    if (level === "info") return "default";
     return "default";
   };
 
-  const renderFindings = (title: string, findings?: AuditFinding[]) => {
-    if (!findings?.length) return null;
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{findings.length} findings</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          {findings.map((f, idx) => (
-            <div key={idx} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-slate-900">{f.title || f.code || "Finding"}</span>
-                  {f.description && <p className="text-sm text-slate-600">{f.description}</p>}
-                </div>
-                <Badge variant={severityTone(f)}>{(f.severity || f.category || "info").toUpperCase()}</Badge>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
-                {f.code && <span className="rounded bg-white px-2 py-1">Code: {f.code}</span>}
-                {typeof f.confidence === "number" && <span className="rounded bg-white px-2 py-1">Confidence: {(f.confidence * 100).toFixed(1)}%</span>}
-                {f.category && <span className="rounded bg-white px-2 py-1">Category: {f.category}</span>}
-                {f.source && <span className="rounded bg-white px-2 py-1">Source: {f.source}</span>}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  };
+  const filteredFindings = useMemo(() => {
+    if (!result) return [];
+    return (result.findings || []).filter((f) => {
+      const sevOk = severityFilter === "all" || f.severity.toLowerCase() === severityFilter;
+      const typeOk = ruleTypeFilter === "all" || (f.rule_type || "").toLowerCase() === ruleTypeFilter;
+      return sevOk && typeOk;
+    });
+  }, [result, severityFilter, ruleTypeFilter]);
 
   const SummaryHeader = () => (
     <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur">
@@ -354,40 +334,99 @@ function AuditWorkspaceInner({ activeAuth }: { activeAuth: import("firebase/auth
           </Card>
 
           {result && (
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Card className="lg:col-span-2">
+            <div className="space-y-4">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Result snapshot</CardTitle>
+                  <CardTitle>Document summary</CardTitle>
                   <CardDescription>
-                    Doc ID: {result.doc_id || "unknown"} · Duration: {result.processing_time_ms} ms · LLM mode:{" "}
-                    {result.audit_trail?.llm_mode || (result.audit_trail?.llm_skipped ? "SKIPPED" : "REMOTE")}
+                    Doc ID: {result.doc_id} ? Doc type: {result.doc_type} ? Tax year: {result.tax_year}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-2 text-sm text-slate-600">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="default">Rule findings: {result.rule_findings.length}</Badge>
-                    <Badge variant="default">LLM findings: {result.llm_findings.length}</Badge>
-                    <Badge variant="success">Merged findings: {result.merged_findings.length}</Badge>
+                <CardContent className="grid gap-3 text-sm text-slate-700 md:grid-cols-2">
+                  <div className="space-y-1">
+                    <p>Filename: {result.document_metadata.filename || "N/A"}</p>
+                    <p>Request ID: {result.request_id}</p>
+                    <p>
+                      Received: {new Date(result.received_at).toLocaleString()} ? Processed: {new Date(result.processed_at).toLocaleString()}
+                    </p>
                   </div>
-                  {result.audit_trail?.retrieval_sources?.length ? (
-                    <div className="text-xs text-slate-500">
-                      Retrieval sources:{" "}
-                      {result.audit_trail.retrieval_sources
-                        .map((s) => {
-                          const source = s as { title?: string; id?: string };
-                          return source.title || source.id || "source";
-                        })
-                        .join(", ")}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="default">Total rules: {result.summary.total_rules_evaluated}</Badge>
+                      <Badge variant="default">Findings: {result.summary.total_findings}</Badge>
                     </div>
-                  ) : null}
+                    <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                      <Badge variant="danger">Errors: {result.summary.by_severity.error ?? 0}</Badge>
+                      <Badge variant="warning">Warnings: {result.summary.by_severity.warning ?? 0}</Badge>
+                      <Badge variant="default">Info: {result.summary.by_severity.info ?? 0}</Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-              {renderFindings("Merged findings (prioritized)", result.merged_findings)}
-              {renderFindings("Rule-based findings", result.rule_findings)}
-              {renderFindings("LLM findings", result.llm_findings)}
-            </div>
-          )}
 
+              <Card>
+                <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <CardTitle>Findings</CardTitle>
+                    <CardDescription>Filter by severity and rule type</CardDescription>
+                  </div>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs uppercase text-slate-500">Severity</Label>
+                      <select
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700"
+                        value={severityFilter}
+                        onChange={(e) => setSeverityFilter(e.target.value as typeof severityFilter)}
+                      >
+                        <option value="all">All</option>
+                        <option value="error">Error</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs uppercase text-slate-500">Rule type</Label>
+                      <select
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700"
+                        value={ruleTypeFilter}
+                        onChange={(e) => setRuleTypeFilter(e.target.value as typeof ruleTypeFilter)}
+                      >
+                        <option value="all">All</option>
+                        <option value="structural">Structural</option>
+                        <option value="math_sanity">Math sanity</option>
+                        <option value="heuristic">Heuristic</option>
+                      </select>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {filteredFindings.length ? (
+                    filteredFindings.map((f) => (
+                      <div key={`${f.code}-${f.condition || ""}`} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-slate-900">{f.summary || f.message || f.code}</span>
+                              <Badge variant={severityTone(f)}>{(f.severity || "info").toUpperCase()}</Badge>
+                              {f.rule_type && <Badge variant="outline">{f.rule_type}</Badge>}
+                            </div>
+                            <p className="text-sm text-slate-700">{f.message}</p>
+                            <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                              {f.category && <span className="rounded bg-white px-2 py-1">Category: {f.category}</span>}
+                              {f.fields?.length ? <span className="rounded bg-white px-2 py-1">Fields: {f.fields.join(", ")}</span> : null}
+                              {f.tags?.length ? <span className="rounded bg-white px-2 py-1">Tags: {f.tags.join(", ")}</span> : null}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-600">No findings match the selected filters.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )
           {status === "error" && (
             <Card className="border-rose-100 bg-rose-50">
               <CardHeader>
