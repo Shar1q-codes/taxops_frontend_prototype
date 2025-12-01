@@ -52,4 +52,11 @@ export const taxopsApi = {
     http<DomainFinding[]>(`/api/income/${engagementId}/findings`, { method: "GET", token }),
   fetchExpenseFindings: (token: string, engagementId: string) =>
     http<DomainFinding[]>(`/api/expenses/${engagementId}/findings`, { method: "GET", token }),
+  uploadBankStatement: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; entries: number }>(`/api/bank/${engagementId}/statements`, { method: "POST", token, body: form });
+  },
+  fetchBankFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/bank/${engagementId}/findings`, { method: "GET", token }),
 };
