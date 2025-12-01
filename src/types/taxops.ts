@@ -79,7 +79,7 @@ export interface BookFinding {
   metadata: Record<string, unknown>;
 }
 
-export type Domain = "income" | "expense" | "bank" | "payroll" | "inventory" | "liabilities";
+export type Domain = "books" | "income" | "expense" | "bank" | "payroll" | "inventory" | "liabilities";
 
 export interface DomainFinding {
   id: string;
@@ -91,6 +91,25 @@ export interface DomainFinding {
   account_code?: string;
   transaction_id?: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface DomainStats {
+  domain: string;
+  high: number;
+  medium: number;
+  low: number;
+  total: number;
+}
+
+export interface EngagementStatsResponse {
+  engagement_id: string;
+  domains: DomainStats[];
+  totals: {
+    high: number;
+    medium: number;
+    low: number;
+    total: number;
+  };
 }
 
 export interface TrialBalanceIngestResponse {

@@ -5,6 +5,7 @@ import {
   Client,
   DataUpload,
   DomainFinding,
+  EngagementStatsResponse,
   Engagement,
   Finding,
   GLIngestResponse,
@@ -100,4 +101,6 @@ export const taxopsApi = {
   },
   fetchLiabilitiesFindings: (token: string, engagementId: string) =>
     http<DomainFinding[]>(`/api/liabilities/${engagementId}/findings`, { method: "GET", token }),
+  fetchEngagementStats: (engagementId: string) => http<EngagementStatsResponse>(`/api/engagements/${engagementId}/stats`),
+  fetchEngagementFindings: (engagementId: string) => http<DomainFinding[]>(`/api/engagements/${engagementId}/findings`),
 };
