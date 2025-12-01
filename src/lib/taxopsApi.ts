@@ -4,6 +4,7 @@ import {
   BookFinding,
   Client,
   DataUpload,
+  DomainFinding,
   Engagement,
   Finding,
   GLIngestResponse,
@@ -47,4 +48,8 @@ export const taxopsApi = {
   },
   fetchBookFindings: (token: string, engagementId: string) =>
     http<BookFinding[]>(`/api/books/${engagementId}/findings`, { method: "GET", token }),
+  fetchIncomeFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/income/${engagementId}/findings`, { method: "GET", token }),
+  fetchExpenseFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/expenses/${engagementId}/findings`, { method: "GET", token }),
 };

@@ -79,6 +79,20 @@ export interface BookFinding {
   metadata: Record<string, unknown>;
 }
 
+export type Domain = "income" | "expense";
+
+export interface DomainFinding {
+  id: string;
+  engagement_id: string;
+  domain: Domain;
+  severity: BookSeverity;
+  code: string;
+  message: string;
+  account_code?: string;
+  transaction_id?: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface TrialBalanceIngestResponse {
   rows_ingested: number;
   total_debit: string;
