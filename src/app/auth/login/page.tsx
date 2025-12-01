@@ -3,7 +3,10 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { signInWithPopup } from "firebase/auth";
+
+import { auth, firebaseReady, googleProvider } from "@/lib/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +15,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
 
   const handleSubmit = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -36,8 +40,32 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    if (!firebaseReady || !auth || !googleProvider) {
+      setError("Google Sign-In is not configured.");
+      return;
+    }
+    try {
+      setGoogleLoading(true);
+      setError(null);
+      await signInWithPopup(auth, googleProvider);
+      router.push("/app/dashboard");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Google sign-in failed.";
+      setError(message);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div>
+      <div className="mb-3 flex items-center gap-2">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-slate-800 hover:underline">
+          <ArrowLeft className="h-4 w-4" />
+          Back to landing
+        </Link>
+      </div>
       <h1 className="text-2xl font-semibold text-slate-900">Sign in</h1>
       <p className="mt-1 text-sm text-slate-600">Access your firm dashboard. All actions are scoped to your firm and client engagements.</p>
 
@@ -81,6 +109,18 @@ export default function LoginPage() {
           Sign in
         </button>
       </form>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={googleLoading}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:border-slate-400"
+        >
+          {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Continue with Google
+        </button>
+      </div>
 
       <div className="mt-4 flex items-center justify-between text-sm text-slate-700">
         <Link href="/auth/forgot-password" className="text-slate-900 hover:underline">
