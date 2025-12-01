@@ -11,12 +11,14 @@ import { taxopsApi } from "@/lib/taxopsApi";
 import { ReportSummary } from "@/types/taxops";
 
 export default function EngagementReportsPage() {
-  const params = useParams<{ engagementId: string }>();
+  const params = useParams<{ clientId: string; engagementId: string }>();
   const { token, user } = useAuth();
   const [report, setReport] = useState<ReportSummary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [draftLoading, setDraftLoading] = useState<boolean>(false);
+  const [pdfLoading, setPdfLoading] = useState<boolean>(false);
+  const [xlsxLoading, setXlsxLoading] = useState<boolean>(false);
 
   const canGenerate = user?.roles.includes("manager") || user?.roles.includes("partner");
 
@@ -42,7 +44,7 @@ export default function EngagementReportsPage() {
 
   const handleGenerate = async () => {
     if (!token || !canGenerate) return;
-    setActionLoading(true);
+    setDraftLoading(true);
     try {
       const data = await taxopsApi.generateDraftReport(token, params.engagementId);
       setReport(data);
@@ -50,13 +52,14 @@ export default function EngagementReportsPage() {
       const message = err instanceof Error ? err.message : "Failed to generate draft.";
       setError(message);
     } finally {
-      setActionLoading(false);
+      setDraftLoading(false);
     }
   };
 
   const handleDownload = async (type: "pdf" | "xlsx") => {
     if (!token) return;
-    setActionLoading(true);
+    if (type === "pdf") setPdfLoading(true);
+    if (type === "xlsx") setXlsxLoading(true);
     try {
       const resp =
         type === "pdf"
@@ -69,7 +72,8 @@ export default function EngagementReportsPage() {
       const message = err instanceof Error ? err.message : "Failed to download report.";
       setError(message);
     } finally {
-      setActionLoading(false);
+      setPdfLoading(false);
+      setXlsxLoading(false);
     }
   };
 
@@ -78,7 +82,7 @@ export default function EngagementReportsPage() {
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reports</p>
         <h1 className="text-2xl font-semibold text-slate-900">Reports and narratives</h1>
-        <p className="text-sm text-slate-600">Draft narratives are assistive only; CPA remains responsible for opinions.</p>
+        <p className="text-sm text-slate-600">Outputs are workpapers for CPA use; no audit opinion is issued by TaxOps.</p>
       </div>
 
       {loading ? (
@@ -107,14 +111,14 @@ export default function EngagementReportsPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={handleGenerate} disabled={!canGenerate || actionLoading}>
-                      {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate draft narrative"}
+                    <Button size="sm" onClick={handleGenerate} disabled={!canGenerate || draftLoading}>
+                      {draftLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate draft narrative"}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDownload("pdf")} disabled={actionLoading}>
-                      Download PDF
+                    <Button variant="outline" size="sm" onClick={() => handleDownload("pdf")} disabled={pdfLoading}>
+                      {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Download PDF"}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDownload("xlsx")} disabled={actionLoading}>
-                      Download Excel
+                    <Button variant="outline" size="sm" onClick={() => handleDownload("xlsx")} disabled={xlsxLoading}>
+                      {xlsxLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Download Excel"}
                     </Button>
                   </div>
                 </div>
@@ -132,7 +136,7 @@ export default function EngagementReportsPage() {
               <p>No report summary available yet.</p>
             )}
             <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-              Role gating: run generation only for partners/managers. Outputs assist CPAs; no audit opinion is issued.
+              Narrative generation is limited to partner/manager roles. Outputs support CPA workpapers; they are not audit opinions.
             </div>
           </CardContent>
         </Card>

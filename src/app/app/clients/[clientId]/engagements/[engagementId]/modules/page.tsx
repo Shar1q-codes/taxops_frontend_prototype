@@ -13,7 +13,7 @@ import { taxopsApi } from "@/lib/taxopsApi";
 import { AuditModule } from "@/types/taxops";
 
 export default function EngagementModulesPage() {
-  const params = useParams<{ engagementId: string }>();
+  const params = useParams<{ clientId: string; engagementId: string }>();
   const { token, user } = useAuth();
   const [modules, setModules] = useState<AuditModule[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,20 +43,6 @@ export default function EngagementModulesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, params.engagementId]);
 
-  const handleRun = async (moduleId: string) => {
-    if (!token || !canRun) return;
-    setRunningId(moduleId);
-    try {
-      await taxopsApi.runModule(token, params.engagementId, moduleId);
-      await load();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to run module.";
-      setError(message);
-    } finally {
-      setRunningId(null);
-    }
-  };
-
   const renderStatus = (status: AuditModule["status"]) => {
     if (status === "completed") return <Badge variant="success">Completed</Badge>;
     if (status === "running") return <Badge variant="warning">Running</Badge>;
@@ -64,12 +50,25 @@ export default function EngagementModulesPage() {
     return <Badge variant="default">Not started</Badge>;
   };
 
+  const handleRun = async (id: string) => {
+    if (!token || !canRun) return;
+    setRunningId(id);
+    try {
+      await taxopsApi.runModule(token, params.engagementId, id);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to run module.";
+      setError(message);
+    } finally {
+      await load();
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Modules</p>
         <h1 className="text-2xl font-semibold text-slate-900">Audit modules</h1>
-        <p className="text-sm text-slate-600">Deterministic rule packs plus anomaly checks. Triggers are role-gated.</p>
+        <p className="text-sm text-slate-600">Automated tests for CPA review; not an audit opinion.</p>
       </div>
 
       {loading ? (
@@ -99,17 +98,17 @@ export default function EngagementModulesPage() {
                 </div>
                 <div className="mt-2 flex items-center justify-between text-xs text-slate-600">
                   <span>Completion</span>
-                  <span>
-                    {m.completion}% · {m.lastRun}
-                  </span>
+                  <span>{m.completion}% · {m.lastRun || "Never run"}</span>
                 </div>
                 <Progress value={m.completion} />
-                <div className="mt-3 flex gap-2">
-                  <Button size="sm" className="gap-1" disabled={!canRun || runningId === m.id} onClick={() => handleRun(m.id)}>
-                    {runningId === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-                    Run module
-                  </Button>
-                </div>
+                {canRun && (
+                  <div className="mt-3 flex gap-2">
+                    <Button size="sm" className="gap-1" disabled={runningId === m.id} onClick={() => handleRun(m.id)}>
+                      {runningId === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+                      Run module
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
             {!modules.length && <p className="text-sm text-slate-600">No modules found.</p>}

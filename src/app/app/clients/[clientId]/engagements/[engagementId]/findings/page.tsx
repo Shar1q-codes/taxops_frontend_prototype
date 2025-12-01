@@ -11,13 +11,14 @@ import { taxopsApi } from "@/lib/taxopsApi";
 import { Finding, FindingStatus, Severity } from "@/types/taxops";
 
 export default function EngagementFindingsPage() {
-  const params = useParams<{ engagementId: string }>();
+  const params = useParams<{ clientId: string; engagementId: string }>();
   const { token } = useAuth();
   const [findings, setFindings] = useState<Finding[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<FindingStatus | "all">("all");
+  const [moduleFilter, setModuleFilter] = useState<string | "all">("all");
   const [selected, setSelected] = useState<Finding | null>(null);
 
   const load = async () => {
@@ -40,13 +41,16 @@ export default function EngagementFindingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, params.engagementId]);
 
+  const modules = useMemo(() => Array.from(new Set(findings.map((f) => f.module))), [findings]);
+
   const filtered = useMemo(() => {
     return findings.filter((f) => {
       const sevOk = severityFilter === "all" ? true : f.severity === severityFilter;
       const statusOk = statusFilter === "all" ? true : f.status === statusFilter;
-      return sevOk && statusOk;
+      const modOk = moduleFilter === "all" ? true : f.module === moduleFilter;
+      return sevOk && statusOk && modOk;
     });
-  }, [findings, severityFilter, statusFilter]);
+  }, [findings, severityFilter, statusFilter, moduleFilter]);
 
   const severityBadge: Record<Severity, "danger" | "warning" | "default"> = {
     critical: "danger",
@@ -62,11 +66,12 @@ export default function EngagementFindingsPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Findings</p>
           <h1 className="text-2xl font-semibold text-slate-900">Findings for CPA review</h1>
-          <p className="text-sm text-slate-600">Automated tests; no audit opinion. Linked to data snapshots and workpapers.</p>
+          <p className="text-sm text-slate-600">Automated tests; CPAs review and resolve. No audit opinion is issued by TaxOps.</p>
         </div>
-        <div className="flex gap-3 text-sm">
+        <div className="flex flex-wrap gap-3 text-sm">
           <Filter label="Severity" value={severityFilter} onChange={(v) => setSeverityFilter(v as Severity | "all")} options={["all", "critical", "major", "minor", "warning", "info"]} />
           <Filter label="Status" value={statusFilter} onChange={(v) => setStatusFilter(v as FindingStatus | "all")} options={["all", "open", "in_review", "closed"]} />
+          <Filter label="Module" value={moduleFilter} onChange={(v) => setModuleFilter(v as string | "all")} options={["all", ...modules]} />
         </div>
       </div>
 
@@ -128,6 +133,9 @@ export default function EngagementFindingsPage() {
                   <p className="font-semibold text-slate-900">{selected.summary}</p>
                   {selected.description && <p className="text-slate-700">{selected.description}</p>}
                   {selected.evidence && <p className="text-xs text-slate-600">Evidence: {selected.evidence}</p>}
+                  <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+                    TODO: Assign reviewer / Mark as closed once backend PATCH endpoints are available.
+                  </div>
                 </>
               ) : (
                 <p className="text-slate-600">Select a finding to view details.</p>

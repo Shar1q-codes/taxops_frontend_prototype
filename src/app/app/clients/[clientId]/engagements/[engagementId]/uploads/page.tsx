@@ -12,7 +12,7 @@ import { taxopsApi } from "@/lib/taxopsApi";
 import { DataUpload } from "@/types/taxops";
 
 export default function EngagementUploadsPage() {
-  const params = useParams<{ engagementId: string }>();
+  const params = useParams<{ clientId: string; engagementId: string }>();
   const { token } = useAuth();
   const [uploads, setUploads] = useState<DataUpload[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -44,12 +44,17 @@ export default function EngagementUploadsPage() {
     return <Badge variant="default">Not uploaded</Badge>;
   };
 
+  const formatDate = (value: string) => {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? value : d.toLocaleString();
+  };
+
   return (
     <div className="space-y-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Uploads</p>
         <h1 className="text-2xl font-semibold text-slate-900">Data uploads</h1>
-        <p className="text-sm text-slate-600">Upload → presigned S3 → ingest → snapshot for deterministic rules.</p>
+        <p className="text-sm text-slate-600">Engagement-scoped and firm-isolated. Upload → presigned S3 → ingest → snapshot for rules.</p>
       </div>
 
       {loading ? (
@@ -73,18 +78,21 @@ export default function EngagementUploadsPage() {
                 <div>
                   <p className="text-sm font-semibold text-slate-900">{u.name}</p>
                   <p className="text-xs text-slate-600">
-                    Type: {u.type} · Updated {u.updatedAt} · Owner: {u.owner ?? "Client Admin"}
+                    Type: {u.type} · Updated {formatDate(u.updatedAt)} · Owner: {u.owner ?? "Client Admin"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {renderStatus(u.status)}
                   <Button variant="outline" size="sm" disabled>
-                    Upload (pending wiring)
+                    Upload (TODO presigned)
                   </Button>
                 </div>
               </div>
             ))}
-            {!uploads.length && <p className="text-sm text-slate-600">No uploads found for this engagement.</p>}
+            {!uploads.length && <p className="text-sm text-slate-600">No uploads yet.</p>}
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+              Note: uploads are scoped to firm_id/client_id/engagement_id. Presigned upload and polling will be wired here.
+            </div>
           </CardContent>
         </Card>
       )}

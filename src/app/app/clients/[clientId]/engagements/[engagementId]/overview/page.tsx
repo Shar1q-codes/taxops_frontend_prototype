@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { Engagement } from "@/types/taxops";
 
 export default function EngagementOverviewPage() {
-  const params = useParams<{ engagementId: string }>();
+  const params = useParams<{ clientId: string; engagementId: string }>();
   const { token } = useAuth();
   const [engagement, setEngagement] = useState<Engagement | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -41,7 +42,7 @@ export default function EngagementOverviewPage() {
       {loading ? (
         <div className="flex items-center gap-2 text-slate-700">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Loading engagement overview...
+          Loading engagement...
         </div>
       ) : error ? (
         <div className="flex items-center gap-3 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
@@ -52,12 +53,13 @@ export default function EngagementOverviewPage() {
         </div>
       ) : engagement ? (
         <>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Engagement</p>
-            <h1 className="text-2xl font-semibold text-slate-900">{engagement.period}</h1>
-            <p className="text-sm text-slate-600">
-              Status: {engagement.status} · Risk: {engagement.risk}
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Engagement</p>
+              <h1 className="text-2xl font-semibold text-slate-900">{engagement.period}</h1>
+              <p className="text-sm text-slate-600">Status: {engagement.status}</p>
+            </div>
+            <Badge variant={engagement.risk === "High" ? "danger" : engagement.risk === "Medium" ? "warning" : "default"}>{engagement.risk} risk</Badge>
           </div>
 
           <Card>
@@ -70,11 +72,10 @@ export default function EngagementOverviewPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="text-sm font-semibold text-slate-800">Risk highlights</CardHeader>
+            <CardHeader className="text-sm font-semibold text-slate-800">Notes</CardHeader>
             <CardContent className="space-y-2 text-sm text-slate-700">
-              <p>• Automated tests surface exceptions; CPAs must review and document workpapers.</p>
-              <p>• Findings stay linked to immutable data snapshots to preserve sign-off integrity.</p>
-              <p>• Role-aware: Partner oversight, Manager review, Senior/Staff execution, Client Admin uploads.</p>
+              <p>Automated tests assist CPA procedures; CPAs remain responsible for conclusions and any audit opinion.</p>
+              <p>Findings link to data snapshots and workpapers for traceability.</p>
             </CardContent>
           </Card>
         </>
