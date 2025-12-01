@@ -6,7 +6,19 @@ import { cn } from "@/lib/utils";
 type EngagementTabsProps = {
   clientId: string;
   engagementId: string;
-  active: "overview" | "uploads" | "books" | "bank" | "inventory" | "payroll" | "income" | "expenses" | "modules" | "findings" | "reports";
+  active:
+    | "overview"
+    | "uploads"
+    | "books"
+    | "bank"
+    | "inventory"
+    | "payroll"
+    | "income"
+    | "expenses"
+    | "liabilities"
+    | "modules"
+    | "findings"
+    | "reports";
 };
 
 const tabs: { key: EngagementTabsProps["active"]; label: string; path: string }[] = [
@@ -16,6 +28,7 @@ const tabs: { key: EngagementTabsProps["active"]; label: string; path: string }[
   { key: "bank", label: "Bank", path: "bank" },
   { key: "inventory", label: "Inventory", path: "inventory" },
   { key: "payroll", label: "Payroll", path: "payroll" },
+  { key: "liabilities", label: "Liabilities", path: "liabilities" },
   { key: "income", label: "Income", path: "income" },
   { key: "expenses", label: "Expenses", path: "expenses" },
   { key: "modules", label: "Modules", path: "modules" },

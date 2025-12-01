@@ -79,7 +79,7 @@ export interface BookFinding {
   metadata: Record<string, unknown>;
 }
 
-export type Domain = "income" | "expense" | "bank" | "payroll" | "inventory";
+export type Domain = "income" | "expense" | "bank" | "payroll" | "inventory" | "liabilities";
 
 export interface DomainFinding {
   id: string;

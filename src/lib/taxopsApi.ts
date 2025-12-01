@@ -83,4 +83,21 @@ export const taxopsApi = {
   },
   fetchInventoryFindings: (token: string, engagementId: string) =>
     http<DomainFinding[]>(`/api/inventory/${engagementId}/findings`, { method: "GET", token }),
+  uploadLoans: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; loans: number }>(`/api/liabilities/${engagementId}/loans`, { method: "POST", token, body: form });
+  },
+  uploadLoanPeriods: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; periods: number }>(`/api/liabilities/${engagementId}/loan-periods`, { method: "POST", token, body: form });
+  },
+  uploadAPEntries: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; entries: number }>(`/api/liabilities/${engagementId}/ap`, { method: "POST", token, body: form });
+  },
+  fetchLiabilitiesFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/liabilities/${engagementId}/findings`, { method: "GET", token }),
 };
