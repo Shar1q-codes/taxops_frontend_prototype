@@ -1,5 +1,15 @@
 import { http } from "@/lib/http";
-import { AuditModule, Client, DataUpload, Engagement, Finding, ReportSummary } from "@/types/taxops";
+import {
+  AuditModule,
+  BookFinding,
+  Client,
+  DataUpload,
+  Engagement,
+  Finding,
+  GLIngestResponse,
+  ReportSummary,
+  TrialBalanceIngestResponse,
+} from "@/types/taxops";
 
 export interface FirmInfo {
   id: string;
@@ -25,4 +35,16 @@ export const taxopsApi = {
     http<ReportSummary>(`/api/engagements/${engagementId}/report/draft`, { method: "POST", token }),
   downloadReportPdf: (token: string, engagementId: string) => http<{ url: string }>(`/api/engagements/${engagementId}/report/pdf`, { token }),
   downloadReportXlsx: (token: string, engagementId: string) => http<{ url: string }>(`/api/engagements/${engagementId}/report/xlsx`, { token }),
+  uploadTrialBalance: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<TrialBalanceIngestResponse>(`/api/books/${engagementId}/trial-balance`, { method: "POST", token, body: form });
+  },
+  uploadGL: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<GLIngestResponse>(`/api/books/${engagementId}/gl`, { method: "POST", token, body: form });
+  },
+  fetchBookFindings: (token: string, engagementId: string) =>
+    http<BookFinding[]>(`/api/books/${engagementId}/findings`, { method: "GET", token }),
 };

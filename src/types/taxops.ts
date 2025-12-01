@@ -66,6 +66,31 @@ export interface Finding {
   description?: string;
 }
 
+export type BookSeverity = "low" | "medium" | "high" | "critical";
+
+export interface BookFinding {
+  id: string;
+  engagement_id: string;
+  severity: BookSeverity;
+  code: string;
+  message: string;
+  account_code?: string;
+  transaction_id?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface TrialBalanceIngestResponse {
+  rows_ingested: number;
+  total_debit: string;
+  total_credit: string;
+}
+
+export interface GLIngestResponse {
+  transactions_ingested: number;
+  total_debit: string;
+  total_credit: string;
+}
+
 export interface ReportSummary {
   id: string;
   engagementId: string;
