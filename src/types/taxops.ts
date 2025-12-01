@@ -4,6 +4,14 @@ export type ModuleStatus = "not_started" | "running" | "completed" | "error" | "
 export type UploadStatus = "not_uploaded" | "uploaded" | "ingested";
 export type FindingStatus = "open" | "in_review" | "closed";
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  roles: string[];
+  firmId: string;
+}
+
 export interface Client {
   id: string;
   name: string;

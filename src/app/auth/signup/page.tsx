@@ -1,18 +1,28 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
 
+import { useAuth } from "@/hooks/useAuth";
+import { AuthApi } from "@/lib/auth-api";
+
 export default function SignupPage() {
   const router = useRouter();
+  const { user, setAuth } = useAuth();
   const [firmName, setFirmName] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/app/dashboard");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -23,9 +33,9 @@ export default function SignupPage() {
     }
     try {
       setLoading(true);
-      // Placeholder POST /auth/signup with firm name and user info.
-      await new Promise((resolve) => setTimeout(resolve, 700));
-      router.push("/app/dashboard");
+      const { accessToken, user: authUser } = await AuthApi.signup(firmName, name, email, password);
+      setAuth(authUser, accessToken);
+      router.replace("/app/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Signup failed.";
       setError(message);

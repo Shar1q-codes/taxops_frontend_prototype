@@ -1,14 +1,16 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
+
 export interface FirmContextValue {
   firmId: string;
   firmName: string;
 }
 
-// Placeholder until real firm loader; replace with server-fetched firm and inject via context.
 export function useFirmContext(): FirmContextValue {
+  const { user } = useAuth();
   return {
-    firmId: "firm-demo",
-    firmName: "TaxOps Demo Firm",
+    firmId: user?.firmId ?? "",
+    firmName: "TaxOps Firm",
   };
 }

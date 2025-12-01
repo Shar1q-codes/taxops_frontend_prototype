@@ -4,6 +4,8 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
+import { AuthApi } from "@/lib/auth-api";
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>("");
   const [status, setStatus] = useState<"idle" | "sent" | "error" | "loading">("idle");
@@ -19,8 +21,7 @@ export default function ForgotPasswordPage() {
     try {
       setStatus("loading");
       setMessage("");
-      // Placeholder POST /auth/forgot-password
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await AuthApi.forgotPassword(email);
       setStatus("sent");
       setMessage("If the email exists, reset instructions have been sent.");
     } catch (err) {

@@ -1,21 +1,30 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { signInWithPopup } from "firebase/auth";
 
 import { auth, firebaseReady, googleProvider } from "@/lib/firebase";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthApi } from "@/lib/auth-api";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, setAuth } = useAuth();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/app/dashboard");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -26,12 +35,9 @@ export default function LoginPage() {
     }
     try {
       setLoading(true);
-      // Placeholder call; wire to FastAPI /auth/login with firm_id scoping.
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      if (rememberMe) {
-        // store token placeholder
-      }
-      router.push("/app/dashboard");
+      const { accessToken, user: authUser } = await AuthApi.login(email, password);
+      setAuth(authUser, accessToken);
+      router.replace("/app/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed.";
       setError(message);
@@ -48,8 +54,19 @@ export default function LoginPage() {
     try {
       setGoogleLoading(true);
       setError(null);
-      await signInWithPopup(auth, googleProvider);
-      router.push("/app/dashboard");
+      const credential = await signInWithPopup(auth, googleProvider);
+      const token = await credential.user.getIdToken();
+      setAuth(
+        {
+          id: credential.user.uid,
+          email: credential.user.email ?? "",
+          name: credential.user.displayName ?? "Google User",
+          roles: ["staff"],
+          firmId: "firebase-firm",
+        },
+        token
+      );
+      router.replace("/app/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Google sign-in failed.";
       setError(message);
