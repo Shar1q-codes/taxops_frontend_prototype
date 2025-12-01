@@ -71,4 +71,16 @@ export const taxopsApi = {
   },
   fetchPayrollFindings: (token: string, engagementId: string) =>
     http<DomainFinding[]>(`/api/payroll/${engagementId}/findings`, { method: "GET", token }),
+  uploadInventoryItems: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; items: number }>(`/api/inventory/${engagementId}/items`, { method: "POST", token, body: form });
+  },
+  uploadInventoryMovements: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; movements: number }>(`/api/inventory/${engagementId}/movements`, { method: "POST", token, body: form });
+  },
+  fetchInventoryFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/inventory/${engagementId}/findings`, { method: "GET", token }),
 };
