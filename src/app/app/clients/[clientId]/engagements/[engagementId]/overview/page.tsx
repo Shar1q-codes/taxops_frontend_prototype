@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EngagementTabs } from "@/components/engagement-tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { Engagement } from "@/types/taxops";
@@ -39,6 +40,7 @@ export default function EngagementOverviewPage() {
 
   return (
     <div className="space-y-4">
+      <EngagementTabs clientId={params.clientId} engagementId={params.engagementId} active="overview" />
       {loading ? (
         <div className="flex items-center gap-2 text-slate-700">
           <Loader2 className="h-4 w-4 animate-spin" />

@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EngagementTabs } from "@/components/engagement-tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { DataUpload } from "@/types/taxops";
@@ -51,6 +52,7 @@ export default function EngagementUploadsPage() {
 
   return (
     <div className="space-y-4">
+      <EngagementTabs clientId={params.clientId} engagementId={params.engagementId} active="uploads" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Uploads</p>
         <h1 className="text-2xl font-semibold text-slate-900">Data uploads</h1>

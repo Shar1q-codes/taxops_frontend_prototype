@@ -6,6 +6,7 @@ import { AlertCircle, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EngagementTabs } from "@/components/engagement-tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { Finding, FindingStatus, Severity } from "@/types/taxops";
@@ -62,6 +63,7 @@ export default function EngagementFindingsPage() {
 
   return (
     <div className="space-y-4">
+      <EngagementTabs clientId={params.clientId} engagementId={params.engagementId} active="findings" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Findings</p>

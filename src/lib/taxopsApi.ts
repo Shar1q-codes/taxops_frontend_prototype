@@ -1,7 +1,14 @@
 import { http } from "@/lib/http";
 import { AuditModule, Client, DataUpload, Engagement, Finding, ReportSummary } from "@/types/taxops";
 
+export interface FirmInfo {
+  id: string;
+  name: string;
+  logoUrl?: string;
+}
+
 export const taxopsApi = {
+  getFirmInfo: (token: string) => http<FirmInfo>("/api/firm/info", { token }), // firm metadata for shell header
   getFirmSummary: (token: string) =>
     http<{ totalClients: number; activeEngagements: number; highSeverityFindings: number; upcomingReports: number }>("/api/firm/summary", { token }),
   getClients: (token: string) => http<Client[]>("/api/clients", { token }),

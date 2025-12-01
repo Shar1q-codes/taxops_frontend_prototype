@@ -83,3 +83,9 @@ export interface WorkpaperFeedItem {
   updatedAt: string;
   description?: string;
 }
+
+export interface FirmInfo {
+  id: string;
+  name: string;
+  logoUrl?: string;
+}

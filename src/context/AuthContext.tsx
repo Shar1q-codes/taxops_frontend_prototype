@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { AuthApi, AuthUser, MeResponse } from "@/lib/auth-api";
+import { ApiError } from "@/lib/http";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -45,15 +46,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
         return;
       }
-      try {
-        const me: MeResponse = await AuthApi.me(stored);
-        setAuth(me.user, stored);
-      } catch (err) {
-        console.error("[Auth] Failed to bootstrap session", err);
+    try {
+      const me: MeResponse = await AuthApi.me(stored);
+      setAuth(me.user, stored);
+    } catch (err) {
+      console.error("[Auth] Failed to bootstrap session", err);
+      if (err instanceof ApiError && err.status === 401) {
         clearAuth();
-      } finally {
-        setLoading(false);
+      } else {
+        clearAuth();
       }
+    } finally {
+      setLoading(false);
+    }
     };
     bootstrap();
   }, [clearAuth, setAuth]);

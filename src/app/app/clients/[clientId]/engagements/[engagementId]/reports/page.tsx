@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EngagementTabs } from "@/components/engagement-tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { ReportSummary } from "@/types/taxops";
@@ -79,6 +80,7 @@ export default function EngagementReportsPage() {
 
   return (
     <div className="space-y-4">
+      <EngagementTabs clientId={params.clientId} engagementId={params.engagementId} active="reports" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reports</p>
         <h1 className="text-2xl font-semibold text-slate-900">Reports and narratives</h1>
