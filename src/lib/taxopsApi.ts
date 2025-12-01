@@ -59,4 +59,16 @@ export const taxopsApi = {
   },
   fetchBankFindings: (token: string, engagementId: string) =>
     http<DomainFinding[]>(`/api/bank/${engagementId}/findings`, { method: "GET", token }),
+  uploadPayrollEmployees: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; employees: number }>(`/api/payroll/${engagementId}/employees`, { method: "POST", token, body: form });
+  },
+  uploadPayrollEntries: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; entries: number }>(`/api/payroll/${engagementId}/entries`, { method: "POST", token, body: form });
+  },
+  fetchPayrollFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/payroll/${engagementId}/findings`, { method: "GET", token }),
 };
