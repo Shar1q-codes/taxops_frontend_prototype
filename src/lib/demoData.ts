@@ -1,4 +1,4 @@
-import { AuditModule, Client, DataUpload, Engagement, Finding, ReportSummary, WorkpaperFeedItem } from "@/types/taxops";
+import { AuditModule, Client, DataUpload, Finding, ReportSummary, WorkpaperFeedItem } from "@/types/taxops";
 
 export const demoClients: Client[] = [
   {

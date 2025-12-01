@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { demoClients, demoFindings, demoModules, demoReports, demoUploads, demoWorkpapers } from "@/lib/demoData";
-import { AuditModule, DataUpload, Finding } from "@/types/taxops";
+import { AuditModule, DataUpload } from "@/types/taxops";
 
 type FindingsFilter = "all" | "critical" | "major" | "minor";
 
@@ -24,7 +24,7 @@ export default function EngagementPage() {
 
   const uploads = demoUploads[engagement.id] ?? [];
   const modules = demoModules[engagement.id] ?? [];
-  const findings = demoFindings[engagement.id] ?? [];
+  const findings = useMemo(() => demoFindings[engagement.id] ?? [], [engagement.id]);
   const report = demoReports[engagement.id];
   const [severityFilter, setSeverityFilter] = useState<FindingsFilter>("all");
   const [moduleFilter, setModuleFilter] = useState<string>("all");
