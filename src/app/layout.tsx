@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Corallo TaxOps | AI Auditor",
-  description: "Secure AI-powered tax audit desk for CPAs.",
+  title: "TaxOps | AI-Powered Audit Automation for CPA Firms",
+  description: "Assistive audit automation: deterministic tests, findings, and workpapers for CPA review. No legal audit opinion.",
 };
 
 export default function RootLayout({
