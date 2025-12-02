@@ -13,7 +13,7 @@ import { ReportSummary } from "@/types/taxops";
 
 export default function EngagementReportsPage() {
   const params = useParams<{ clientId: string; engagementId: string }>();
-  const { token, user } = useAuth();
+  const { token, roles } = useAuth();
   const [report, setReport] = useState<ReportSummary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export default function EngagementReportsPage() {
   const [pdfLoading, setPdfLoading] = useState<boolean>(false);
   const [xlsxLoading, setXlsxLoading] = useState<boolean>(false);
 
-  const canGenerate = user?.roles.includes("manager") || user?.roles.includes("partner");
+  const canGenerate = roles.includes("manager") || roles.includes("partner") || roles.includes("owner");
 
   const load = async () => {
     if (!token) return;

@@ -6,11 +6,10 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
-import { AuthApi } from "@/lib/auth-api";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { user, setAuth } = useAuth();
+  const { currentUser, registerFirm } = useAuth();
   const [firmName, setFirmName] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -19,10 +18,10 @@ export default function SignupPage() {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (user) {
+    if (currentUser) {
       router.replace("/app/dashboard");
     }
-  }, [user, router]);
+  }, [currentUser, router]);
 
   const handleSubmit = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -33,8 +32,7 @@ export default function SignupPage() {
     }
     try {
       setLoading(true);
-      const { accessToken, user: authUser } = await AuthApi.signup(firmName, name, email, password);
-      setAuth(authUser, accessToken);
+      await registerFirm(firmName, email, password, name);
       router.replace("/app/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Signup failed.";

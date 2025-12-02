@@ -132,6 +132,7 @@ export const taxopsApi = {
   fetchDocuments,
   uploadDocument,
   fetchDocumentFindings,
+  fetchControlsFindings,
 };
 
 export async function fetchDocuments(engagementId: string): Promise<DocumentListResponse> {
@@ -167,4 +168,8 @@ export async function uploadDocument(
 
 export async function fetchDocumentFindings(engagementId: string): Promise<DomainFinding[]> {
   return http<DomainFinding[]>(`/api/docs/${engagementId}/findings`);
+}
+
+export async function fetchControlsFindings(engagementId: string): Promise<DomainFinding[]> {
+  return http<DomainFinding[]>(`/api/controls/${engagementId}/findings`);
 }

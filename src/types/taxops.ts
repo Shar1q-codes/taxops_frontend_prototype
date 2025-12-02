@@ -89,7 +89,8 @@ export type Domain =
   | "liabilities"
   | "assets"
   | "compliance"
-  | "documents";
+  | "documents"
+  | "controls";
 
 export interface DomainFinding {
   id: string;

@@ -19,6 +19,7 @@ type EngagementTabsProps = {
     | "liabilities"
     | "compliance"
     | "documents"
+    | "controls"
     | "modules"
     | "findings"
     | "reports";
@@ -35,6 +36,7 @@ const tabs: { key: EngagementTabsProps["active"]; label: string; path: string }[
   { key: "liabilities", label: "Liabilities", path: "liabilities" },
   { key: "compliance", label: "Compliance", path: "compliance" },
   { key: "documents", label: "Documents", path: "documents" },
+  { key: "controls", label: "Controls", path: "controls" },
   { key: "income", label: "Income", path: "income" },
   { key: "expenses", label: "Expenses", path: "expenses" },
   { key: "modules", label: "Modules", path: "modules" },

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 
+import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { DomainFinding } from "@/types/taxops";
 
 export function ComplianceModule({ engagementId }: { engagementId: string }) {
+  const { token } = useAuth();
   const [returnsFile, setReturnsFile] = useState<File | null>(null);
   const [booksFile, setBooksFile] = useState<File | null>(null);
   const [findings, setFindings] = useState<DomainFinding[]>([]);
@@ -15,10 +17,14 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
 
   async function handleUploadReturns() {
     if (!returnsFile) return;
+    if (!token) {
+      setError("You need to be signed in to upload.");
+      return;
+    }
     setError(null);
     setMessage(null);
     try {
-      const res = await taxopsApi.uploadComplianceReturns(engagementId, returnsFile);
+      const res = await taxopsApi.uploadComplianceReturns(token, engagementId, returnsFile);
       setMessage(`Uploaded ${res.rows} tax return rows.`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to upload returns CSV.";
@@ -28,10 +34,14 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
 
   async function handleUploadBooks() {
     if (!booksFile) return;
+    if (!token) {
+      setError("You need to be signed in to upload.");
+      return;
+    }
     setError(null);
     setMessage(null);
     try {
-      const res = await taxopsApi.uploadComplianceBooks(engagementId, booksFile);
+      const res = await taxopsApi.uploadComplianceBooks(token, engagementId, booksFile);
       setMessage(`Uploaded ${res.rows} books tax rows.`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to upload books tax CSV.";
@@ -43,8 +53,13 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
     setLoading(true);
     setError(null);
     setMessage(null);
+    if (!token) {
+      setError("You need to be signed in to run compliance checks.");
+      setLoading(false);
+      return;
+    }
     try {
-      const f = await taxopsApi.fetchComplianceFindings(engagementId);
+      const f = await taxopsApi.fetchComplianceFindings(token, engagementId);
       setFindings(f);
       setMessage(`Found ${f.length} compliance exceptions.`);
     } catch (err: unknown) {

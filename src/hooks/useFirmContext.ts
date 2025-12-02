@@ -14,7 +14,7 @@ export interface FirmContextValue {
 }
 
 export function useFirmContext(): FirmContextValue {
-  const { user, token } = useAuth();
+  const { currentUser, currentFirm, token } = useAuth();
   const [firmInfo, setFirmInfo] = useState<FirmInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +41,8 @@ export function useFirmContext(): FirmContextValue {
   }, [token]);
 
   return {
-    firmId: user?.firmId ?? "",
-    firmName: firmInfo?.name ?? "TaxOps Firm",
+    firmId: currentFirm?.id ?? currentUser?.id ?? "",
+    firmName: firmInfo?.name ?? currentFirm?.name ?? "TaxOps Firm",
     firmLogoUrl: firmInfo?.logoUrl,
     loading,
     error,

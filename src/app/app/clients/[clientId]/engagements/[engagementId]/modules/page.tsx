@@ -15,13 +15,13 @@ import { AuditModule } from "@/types/taxops";
 
 export default function EngagementModulesPage() {
   const params = useParams<{ clientId: string; engagementId: string }>();
-  const { token, user } = useAuth();
+  const { token, roles } = useAuth();
   const [modules, setModules] = useState<AuditModule[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [runningId, setRunningId] = useState<string | null>(null);
 
-  const canRun = user?.roles.includes("manager") || user?.roles.includes("partner");
+  const canRun = roles.includes("manager") || roles.includes("partner") || roles.includes("owner");
 
   const load = async () => {
     if (!token) return;

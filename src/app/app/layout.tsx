@@ -9,17 +9,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFirmContext } from "@/hooks/useFirmContext";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, token, loading, clearAuth } = useAuth();
+  const { currentUser, token, isLoading, logout } = useAuth();
   const firm = useFirmContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !token) {
       router.replace("/auth/login");
     }
-  }, [loading, user, router]);
+  }, [isLoading, token, router]);
 
-  if (loading || !user || !token) {
+  if (isLoading || !token || !currentUser) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-800">
         <Loader2 className="h-5 w-5 animate-spin text-slate-900" />
@@ -29,7 +29,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AppShell firmName={firm.firmName} userName={user.name} role={user.roles.join(", ")} onLogout={clearAuth}>
+    <AppShell firmName={firm.firmName} userName={currentUser.full_name || currentUser.email} role="" onLogout={logout}>
       {children}
     </AppShell>
   );

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 
+import { useAuth } from "@/hooks/useAuth";
 import { taxopsApi } from "@/lib/taxopsApi";
 import { DomainFinding } from "@/types/taxops";
 
 export function AssetsModule({ engagementId }: { engagementId: string }) {
+  const { token } = useAuth();
   const [registerFile, setRegisterFile] = useState<File | null>(null);
   const [depFile, setDepFile] = useState<File | null>(null);
   const [findings, setFindings] = useState<DomainFinding[]>([]);
@@ -15,10 +17,14 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
 
   async function handleUploadRegister() {
     if (!registerFile) return;
+    if (!token) {
+      setError("You need to be signed in to upload.");
+      return;
+    }
     setError(null);
     setMessage(null);
     try {
-      const res = await taxopsApi.uploadAssetRegister(engagementId, registerFile);
+      const res = await taxopsApi.uploadAssetRegister(token, engagementId, registerFile);
       setMessage(`Uploaded ${res.assets} assets from register.`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to upload asset register.";
@@ -28,10 +34,14 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
 
   async function handleUploadDep() {
     if (!depFile) return;
+    if (!token) {
+      setError("You need to be signed in to upload.");
+      return;
+    }
     setError(null);
     setMessage(null);
     try {
-      const res = await taxopsApi.uploadAssetDepreciation(engagementId, depFile);
+      const res = await taxopsApi.uploadAssetDepreciation(token, engagementId, depFile);
       setMessage(`Uploaded ${res.entries} depreciation entries.`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to upload depreciation file.";
@@ -43,8 +53,13 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
     setLoading(true);
     setError(null);
     setMessage(null);
+    if (!token) {
+      setError("You need to be signed in to run asset checks.");
+      setLoading(false);
+      return;
+    }
     try {
-      const f = await taxopsApi.fetchAssetsFindings(engagementId);
+      const f = await taxopsApi.fetchAssetsFindings(token, engagementId);
       setFindings(f);
       setMessage(`Found ${f.length} asset exceptions.`);
     } catch (err: unknown) {

@@ -4,27 +4,22 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
-import { signInWithPopup } from "firebase/auth";
 
-import { auth, firebaseReady, googleProvider } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { AuthApi } from "@/lib/auth-api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, setAuth } = useAuth();
+  const { currentUser, login } = useAuth();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (user) {
+    if (currentUser) {
       router.replace("/app/dashboard");
     }
-  }, [user, router]);
+  }, [currentUser, router]);
 
   const handleSubmit = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -35,43 +30,13 @@ export default function LoginPage() {
     }
     try {
       setLoading(true);
-      const { accessToken, user: authUser } = await AuthApi.login(email, password);
-      setAuth(authUser, accessToken);
+      await login(email, password);
       router.replace("/app/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed.";
       setError(message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    if (!firebaseReady || !auth || !googleProvider) {
-      setError("Google Sign-In is not configured.");
-      return;
-    }
-    try {
-      setGoogleLoading(true);
-      setError(null);
-      const credential = await signInWithPopup(auth, googleProvider);
-      const token = await credential.user.getIdToken();
-      setAuth(
-        {
-          id: credential.user.uid,
-          email: credential.user.email ?? "",
-          name: credential.user.displayName ?? "Google User",
-          roles: ["staff"],
-          firmId: "firebase-firm",
-        },
-        token
-      );
-      router.replace("/app/dashboard");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Google sign-in failed.";
-      setError(message);
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -107,10 +72,6 @@ export default function LoginPage() {
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
           />
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-700">
-          <input id="remember" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-          <label htmlFor="remember">Remember me on this device</label>
-        </div>
         {error ? (
           <div className="flex items-center gap-2 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
             <AlertCircle className="h-4 w-4" />
@@ -126,27 +87,6 @@ export default function LoginPage() {
           Sign in
         </button>
       </form>
-
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={googleLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:border-slate-400"
-        >
-          {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Continue with Google
-        </button>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-700">
-        <Link href="/auth/forgot-password" className="text-slate-900 hover:underline">
-          Forgot password?
-        </Link>
-        <Link href="/auth/signup" className="text-slate-900 hover:underline">
-          Create account
-        </Link>
-      </div>
     </div>
   );
 }
