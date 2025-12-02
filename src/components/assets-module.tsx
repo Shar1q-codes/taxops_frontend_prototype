@@ -20,8 +20,9 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
     try {
       const res = await taxopsApi.uploadAssetRegister(engagementId, registerFile);
       setMessage(`Uploaded ${res.assets} assets from register.`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to upload asset register.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to upload asset register.";
+      setError(message);
     }
   }
 
@@ -32,8 +33,9 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
     try {
       const res = await taxopsApi.uploadAssetDepreciation(engagementId, depFile);
       setMessage(`Uploaded ${res.entries} depreciation entries.`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to upload depreciation file.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to upload depreciation file.";
+      setError(message);
     }
   }
 
@@ -45,8 +47,9 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
       const f = await taxopsApi.fetchAssetsFindings(engagementId);
       setFindings(f);
       setMessage(`Found ${f.length} asset exceptions.`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to run asset checks.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to run asset checks.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -93,7 +96,7 @@ export function AssetsModule({ engagementId }: { engagementId: string }) {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Findings</h2>
           <button className="text-xs border rounded px-3 py-1" onClick={handleRunChecks} disabled={loading}>
-            {loading ? "Running checks…" : "Run asset checks"}
+            {loading ? "Running checks..." : "Run asset checks"}
           </button>
         </div>
 

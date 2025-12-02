@@ -20,8 +20,9 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
     try {
       const res = await taxopsApi.uploadComplianceReturns(engagementId, returnsFile);
       setMessage(`Uploaded ${res.rows} tax return rows.`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to upload returns CSV.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to upload returns CSV.";
+      setError(message);
     }
   }
 
@@ -32,8 +33,9 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
     try {
       const res = await taxopsApi.uploadComplianceBooks(engagementId, booksFile);
       setMessage(`Uploaded ${res.rows} books tax rows.`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to upload books tax CSV.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to upload books tax CSV.";
+      setError(message);
     }
   }
 
@@ -45,8 +47,9 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
       const f = await taxopsApi.fetchComplianceFindings(engagementId);
       setFindings(f);
       setMessage(`Found ${f.length} compliance exceptions.`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to run compliance checks.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to run compliance checks.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -86,7 +89,7 @@ export function ComplianceModule({ engagementId }: { engagementId: string }) {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Findings</h2>
           <button className="text-xs border rounded px-3 py-1" onClick={handleRunChecks} disabled={loading}>
-            {loading ? "Running checks…" : "Run compliance checks"}
+            {loading ? "Running checks..." : "Run compliance checks"}
           </button>
         </div>
 
