@@ -79,7 +79,17 @@ export interface BookFinding {
   metadata: Record<string, unknown>;
 }
 
-export type Domain = "books" | "income" | "expense" | "bank" | "payroll" | "inventory" | "liabilities";
+export type Domain =
+  | "books"
+  | "income"
+  | "expense"
+  | "bank"
+  | "payroll"
+  | "inventory"
+  | "liabilities"
+  | "assets"
+  | "compliance"
+  | "documents";
 
 export interface DomainFinding {
   id: string;
@@ -147,3 +157,20 @@ export interface FirmInfo {
   name: string;
   logoUrl?: string;
 }
+
+export type DocumentMetadata = {
+  id: number;
+  engagement_id: number;
+  filename: string;
+  type: string;
+  amount: number | null;
+  date: string | null;
+  counterparty: string | null;
+  external_ref: string | null;
+  uploaded_at: string;
+  uploaded_by: string;
+};
+
+export type DocumentListResponse = {
+  documents: DocumentMetadata[];
+};

@@ -9,6 +9,8 @@ import {
   Engagement,
   Finding,
   GLIngestResponse,
+  DocumentListResponse,
+  DocumentMetadata,
   ReportSummary,
   TrialBalanceIngestResponse,
 } from "@/types/taxops";
@@ -103,4 +105,66 @@ export const taxopsApi = {
     http<DomainFinding[]>(`/api/liabilities/${engagementId}/findings`, { method: "GET", token }),
   fetchEngagementStats: (engagementId: string) => http<EngagementStatsResponse>(`/api/engagements/${engagementId}/stats`),
   fetchEngagementFindings: (engagementId: string) => http<DomainFinding[]>(`/api/engagements/${engagementId}/findings`),
+  uploadAssetRegister: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; assets: number }>(`/api/assets/${engagementId}/register`, { method: "POST", token, body: form });
+  },
+  uploadAssetDepreciation: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; entries: number }>(`/api/assets/${engagementId}/depreciation`, { method: "POST", token, body: form });
+  },
+  fetchAssetsFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/assets/${engagementId}/findings`, { method: "GET", token }),
+  uploadComplianceReturns: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; rows: number }>(`/api/compliance/${engagementId}/returns`, { method: "POST", token, body: form });
+  },
+  uploadComplianceBooks: (token: string, engagementId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http<{ engagement_id: string; rows: number }>(`/api/compliance/${engagementId}/books`, { method: "POST", token, body: form });
+  },
+  fetchComplianceFindings: (token: string, engagementId: string) =>
+    http<DomainFinding[]>(`/api/compliance/${engagementId}/findings`, { method: "GET", token }),
+  fetchDocuments,
+  uploadDocument,
+  fetchDocumentFindings,
 };
+
+export async function fetchDocuments(engagementId: string): Promise<DocumentListResponse> {
+  return http<DocumentListResponse>(`/api/docs/${engagementId}`);
+}
+
+export async function uploadDocument(
+  engagementId: string,
+  params: {
+    file: File;
+    type: string;
+    amount?: number;
+    date?: string;
+    counterparty?: string;
+    external_ref?: string;
+  }
+): Promise<DocumentMetadata> {
+  const formData = new FormData();
+  formData.append("file", params.file);
+
+  const metadata = {
+    type: params.type,
+    amount: typeof params.amount === "number" && !Number.isNaN(params.amount) ? params.amount : undefined,
+    date: params.date || undefined,
+    counterparty: params.counterparty || undefined,
+    external_ref: params.external_ref || undefined,
+  };
+
+  formData.append("metadata", JSON.stringify(metadata));
+
+  return http<DocumentMetadata>(`/api/docs/${engagementId}/upload`, { method: "POST", body: formData });
+}
+
+export async function fetchDocumentFindings(engagementId: string): Promise<DomainFinding[]> {
+  return http<DomainFinding[]>(`/api/docs/${engagementId}/findings`);
+}
