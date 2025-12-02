@@ -4,6 +4,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 import { AuthApi, AuthFirm, AuthUser, MeResponse } from "@/lib/auth-api";
 import { ApiError } from "@/lib/http";
+import { auth, firebaseReady, googleProvider } from "@/lib/firebase";
+import { signInWithPopup } from "firebase/auth";
 
 type AuthContextValue = {
   currentUser: AuthUser | null;
@@ -13,6 +15,7 @@ type AuthContextValue = {
   isLoading: boolean;
   login: (email: string, password: string, firmId?: string | null) => Promise<void>;
   registerFirm: (firmName: string, email: string, password: string, fullName?: string | null) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
 };
 
@@ -68,6 +71,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [setAuthState]
   );
 
+  const loginWithGoogle = useCallback(async () => {
+    if (!firebaseReady || !auth || !googleProvider) {
+      throw new Error("Google Sign-In is not configured.");
+    }
+    const credential = await signInWithPopup(auth, googleProvider);
+    const idToken = await credential.user.getIdToken();
+    setCurrentUser({
+      id: credential.user.uid,
+      email: credential.user.email ?? "",
+      full_name: credential.user.displayName ?? "Google User",
+      is_active: true,
+    });
+    setCurrentFirm({ id: "firebase-firm", name: "Firebase Auth" });
+    setRoles(["viewer"]);
+    setToken(idToken);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_KEY, idToken);
+    }
+  }, []);
+
   useEffect(() => {
     const bootstrap = async () => {
       if (AUTH_BYPASS) {
@@ -115,9 +138,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       login,
       registerFirm,
+      loginWithGoogle,
       logout,
     }),
-    [currentUser, currentFirm, token, roles, isLoading, login, registerFirm, logout]
+    [currentUser, currentFirm, token, roles, isLoading, login, registerFirm, loginWithGoogle, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

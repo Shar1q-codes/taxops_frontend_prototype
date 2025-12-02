@@ -3,13 +3,13 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, Mail, LogIn } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { currentUser, login } = useAuth();
+  const { currentUser, login, loginWithGoogle } = useAuth();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -83,10 +83,33 @@ export default function LoginPage() {
           className="flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
           disabled={loading}
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
           Sign in
         </button>
       </form>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={async () => {
+            setError(null);
+            setLoading(true);
+            try {
+              await loginWithGoogle();
+              router.replace("/app/dashboard");
+            } catch (err) {
+              const message = err instanceof Error ? err.message : "Google sign-in failed.";
+              setError(message);
+            } finally {
+              setLoading(false);
+            }
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:border-slate-400"
+        >
+          <Mail className="h-4 w-4" />
+          Continue with Google
+        </button>
+      </div>
     </div>
   );
 }
