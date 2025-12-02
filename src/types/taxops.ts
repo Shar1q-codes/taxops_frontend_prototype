@@ -175,3 +175,18 @@ export type DocumentMetadata = {
 export type DocumentListResponse = {
   documents: DocumentMetadata[];
 };
+
+export type DomainRiskSummary = {
+  domain: string;
+  score: number;
+  total_findings: number;
+  by_severity: Record<string, number>;
+};
+
+export type EngagementRiskSummary = {
+  engagement_id: string;
+  overall_score: number;
+  total_findings: number;
+  by_severity: Record<string, number>;
+  domains: DomainRiskSummary[];
+};

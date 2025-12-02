@@ -11,6 +11,7 @@ import {
   GLIngestResponse,
   DocumentListResponse,
   DocumentMetadata,
+  EngagementRiskSummary,
   ReportSummary,
   TrialBalanceIngestResponse,
 } from "@/types/taxops";
@@ -172,4 +173,8 @@ export async function fetchDocumentFindings(engagementId: string): Promise<Domai
 
 export async function fetchControlsFindings(engagementId: string): Promise<DomainFinding[]> {
   return http<DomainFinding[]>(`/api/controls/${engagementId}/findings`);
+}
+
+export async function fetchEngagementRiskSummary(params: { engagementId: string; token: string }): Promise<EngagementRiskSummary> {
+  return http<EngagementRiskSummary>(`/api/engagements/${params.engagementId}/risk-summary`, { token: params.token });
 }
